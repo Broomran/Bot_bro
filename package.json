@@ -1,0 +1,14 @@
+{
+  "name": "A3RBOT_V2026",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.17.0",
+    "yt-search": "^2.13.1",
+    "play-dl": "^1.9.7"
+  }
+}
