@@ -1,35 +1,41 @@
 const fs = require("fs");
+const path = require("path");
 
-function ensureFile(path, defaultData = []) {
+// المجلد الرئيسي للتخزين
+const STORAGE_DIR = path.join(__dirname, "storage");
 
-    if (!fs.existsSync(path)) {
+// تأكد من وجود مجلد storage
+if (!fs.existsSync(STORAGE_DIR)) {
+    fs.mkdirSync(STORAGE_DIR, { recursive: true });
+}
 
-        fs.writeFileSync(
-            path,
-            JSON.stringify(defaultData, null, 2)
-        );
-
+function ensureFile(filename, defaultData = []) {
+    const fullPath = path.join(STORAGE_DIR, filename);
+    if (!fs.existsSync(fullPath)) {
+        fs.writeFileSync(fullPath, JSON.stringify(defaultData, null, 2));
     }
-
 }
 
-function loadJSON(path, defaultData = []) {
-
-    ensureFile(path, defaultData);
-
-    return JSON.parse(
-        fs.readFileSync(path)
-    );
-
+function loadJSON(filename, defaultData = []) {
+    // إزالة ./ من بداية المسار إذا وجدت
+    let cleanFilename = filename;
+    if (cleanFilename.startsWith("./")) {
+        cleanFilename = cleanFilename.substring(2);
+    }
+    
+    ensureFile(cleanFilename, defaultData);
+    const fullPath = path.join(STORAGE_DIR, cleanFilename);
+    return JSON.parse(fs.readFileSync(fullPath));
 }
 
-function saveJSON(path, data) {
-
-    fs.writeFileSync(
-        path,
-        JSON.stringify(data, null, 2)
-    );
-
+function saveJSON(filename, data) {
+    let cleanFilename = filename;
+    if (cleanFilename.startsWith("./")) {
+        cleanFilename = cleanFilename.substring(2);
+    }
+    
+    const fullPath = path.join(STORAGE_DIR, cleanFilename);
+    fs.writeFileSync(fullPath, JSON.stringify(data, null, 2));
 }
 
 module.exports = {
