@@ -1,39 +1,38 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
 
-// مجلد التخزين
-const STORAGE_DIR = path.join(__dirname, 'storage');
+function ensureFile(path, defaultData = []) {
 
-// تأكد من وجود المجلد
-if (!fs.existsSync(STORAGE_DIR)) {
-    fs.mkdirSync(STORAGE_DIR, { recursive: true });
-}
+    if (!fs.existsSync(path)) {
 
-// تحميل JSON من ملف
-function loadJSON(filename, defaultValue = {}) {
-    try {
-        const fullPath = path.join(STORAGE_DIR, filename);
-        if (!fs.existsSync(fullPath)) {
-            return defaultValue;
-        }
-        const data = fs.readFileSync(fullPath, 'utf8');
-        return JSON.parse(data);
-    } catch (err) {
-        console.error(`Error loading ${filename}:`, err.message);
-        return defaultValue;
+        fs.writeFileSync(
+            path,
+            JSON.stringify(defaultData, null, 2)
+        );
+
     }
+
 }
 
-// حفظ JSON إلى ملف
-function saveJSON(filename, data) {
-    try {
-        const fullPath = path.join(STORAGE_DIR, filename);
-        fs.writeFileSync(fullPath, JSON.stringify(data, null, 2), 'utf8');
-        return true;
-    } catch (err) {
-        console.error(`Error saving ${filename}:`, err.message);
-        return false;
-    }
+function loadJSON(path, defaultData = []) {
+
+    ensureFile(path, defaultData);
+
+    return JSON.parse(
+        fs.readFileSync(path)
+    );
+
 }
 
-module.exports = { loadJSON, saveJSON };
+function saveJSON(path, data) {
+
+    fs.writeFileSync(
+        path,
+        JSON.stringify(data, null, 2)
+    );
+
+}
+
+module.exports = {
+    loadJSON,
+    saveJSON
+};
