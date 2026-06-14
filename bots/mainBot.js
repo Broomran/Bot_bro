@@ -230,27 +230,54 @@ function handlePM(msg) {
 
     // ================= HELP =================
 
-    if (body.toLowerCase() === "help") {
+    if (body.toLowerCase() === "help" || body.toLowerCase() === "مساعدة") {
 
         return send(from,
 
-`BOT SERVER
+`🤖 *BOT SERVER / سيرفر البوت* 🤖
 
-Create Bot:
-j/room#username#password
+📖 *English Instructions:* 🇬🇧
+━━━━━━━━━━━━━━━━━━━━━
+To create a new bot, send:
+\`Dd room username password\`
 
-Example:
-j/myroom#bot1#123456`
+📝 *Example:* ✨
+\`Dd myroom bot1 123456\`
+
+🔍 *Parameters:* 📋
+• \`room\`    → Chat room name 🏠
+• \`username\` → Bot username 👤
+• \`password\` → Bot password 🔐
+
+━━━━━━━━━━━━━━━━━━━━━
+
+📖 *التعليمات العربية:* 🇸🇦
+━━━━━━━━━━━━━━━━━━━━━
+لإنشاء بوت جديد، أرسل:
+\`Dd اسم_الغرفة اسم_المستخدم كلمة_السر\`
+
+📝 *مثال:* ✨
+\`Dd غرفتي بوت1 123456\`
+
+🔍 *المعاملات:* 📋
+• \`اسم_الغرفة\` → اسم غرفة المحادثة 🏠
+• \`اسم_المستخدم\` → اسم البوت 👤
+• \`كلمة_السر\` → كلمة سر البوت 🔐
+
+━━━━━━━━━━━━━━━━━━━━━
+✅ *No symbols or hashtags needed!*
+🚫 *لا تحتاج رموز أو علامات #*`
         );
 
     }
 
     // ================= CREATE =================
 
-    if (body.startsWith("j/")) {
-
+    // التحقق من الأمر بصيغة Dd (غير حساس لحالة الأحرف)
+    const lowerBody = body.toLowerCase();
+    
+    if (lowerBody.startsWith("dd ")) {
         createBot(from, body);
-
     }
 
 }
@@ -263,35 +290,65 @@ async function createBot(owner, command) {
 
     try {
 
-        const split =
-            command.substring(2).split("#");
+        // إزالة "dd " من بداية الأمر (3 أحرف لأن dd + مسافة)
+        const afterCommand = command.substring(3).trim();
+        
+        // تقسيم باستخدام المسافات
+        const parts = afterCommand.split(/\s+/);
+        
+        const room = parts[0];
+        const username = parts[1];
+        const password = parts[2];
 
-        const room = split[0];
-        const username = split[1];
-        const password = split[2];
+        // التحقق من صحة المدخلات
+        if (!room || !username || !password) {
 
-        if (
-            !room ||
-            !username ||
-            !password
-        ) {
+            return send(owner,
 
-            return send(
-                owner,
-                "Invalid format."
+`❌ *Invalid Command / أمر غير صحيح* ❌
+
+📖 *English:* 🇬🇧
+Please use:
+\`Dd room username password\`
+
+📝 *Example:* ✨
+\`Dd myroom bot1 123456\`
+
+━━━━━━━━━━━━━━━━━━━━━
+
+📖 *العربية:* 🇸🇦
+الرجاء استخدام:
+\`Dd اسم_الغرفة اسم_المستخدم كلمة_السر\`
+
+📝 *مثال:* ✨
+\`Dd غرفتي بوت1 123456\`
+
+━━━━━━━━━━━━━━━━━━━━━
+💡 *Tip:* Use \`help\` or \`مساعدة\` for more info`
             );
 
         }
 
+        // التحقق من وجود بوت نشط في نفس الغرفة
         if (CHILD_BOTS[room]) {
 
             return send(
                 owner,
-                "Bot already active in room."
+`⚠️ *Bot already exists in this room!* ⚠️
+
+📖 A bot is already active in \`${room}\`
+🗑️ Please stop it first or use another room.
+
+━━━━━━━━━━━━━━━━━━━━━
+⚠️ *يوجد بوت نشط في هذه الغرفة!* ⚠️
+
+📖 بوت يعمل بالفعل في \`${room}\`
+🗑️ الرجاء إيقافه أولاً أو استخدام غرفة أخرى`
             );
 
         }
 
+        // تحميل البوتات المحفوظة
         let bots =
             loadJSON(
                 "./storage/bots.json",
@@ -321,7 +378,13 @@ async function createBot(owner, command) {
 
         send(
             owner,
-            `Creating bot ${username}...`
+`🔨 *Creating bot... / جاري إنشاء البوت...* 🔨
+
+📖 Please wait a moment...
+📖 الرجاء الانتظار لحظة...
+
+👤 Username: ${username}
+🏠 Room: ${room}`
         );
 
         const result =
@@ -331,11 +394,21 @@ async function createBot(owner, command) {
 
             return send(
                 owner,
-                "Bot failed login."
+`❌ *Bot creation failed!* ❌
+
+📖 Could not connect to the chat server.
+🔐 Please check your username and password.
+
+━━━━━━━━━━━━━━━━━━━━━
+❌ *فشل إنشاء البوت!* ❌
+
+📖 لا يمكن الاتصال بسيرفر المحادثة.
+🔐 الرجاء التحقق من اسم المستخدم وكلمة السر.`
             );
 
         }
 
+        // حفظ البوت في الذاكرة
         CHILD_BOTS[room] = {
 
             room,
@@ -345,6 +418,7 @@ async function createBot(owner, command) {
 
         };
 
+        // حفظ البوت في ملف التخزين
         bots = bots.filter(
             x => x.room !== room
         );
@@ -364,10 +438,22 @@ async function createBot(owner, command) {
 
         send(owner,
 
-`BOT CREATED
+`✅ *BOT CREATED SUCCESSFULLY!* ✅
 
-Room: ${room}
-Bot: ${username}`
+━━━━━━━━━━━━━━━━━━━━━
+📖 *English:* 🇬🇧
+🏠 Room: \`${room}\`
+👤 Bot: \`${username}\`
+🔐 Status: Connected & Active ✨
+
+━━━━━━━━━━━━━━━━━━━━━
+📖 *العربية:* 🇸🇦
+🏠 الغرفة: \`${room}\`
+👤 البوت: \`${username}\`
+🔐 الحالة: متصل ونشط ✨
+
+━━━━━━━━━━━━━━━━━━━━━
+💡 \`help\` / \`مساعدة\` for more commands`
         );
 
     } catch(err) {
@@ -379,7 +465,14 @@ Bot: ${username}`
 
         send(
             owner,
-            "Bot crashed."
+`💥 *Bot crashed / تعطل البوت* 💥
+
+📖 An error occurred while creating the bot.
+🔄 Please try again later.
+
+━━━━━━━━━━━━━━━━━━━━━
+📖 حدث خطأ أثناء إنشاء البوت.
+🔄 الرجاء المحاولة مرة أخرى لاحقًا.`
         );
 
     }
