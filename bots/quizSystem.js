@@ -742,6 +742,6 @@ module.exports = {
     getTop10,
     getMyScore,
     getRoomTop,
-    activeQuiz
+    active
 
 };
